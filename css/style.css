@@ -348,6 +348,7 @@ html.lang-en .ko{display:none;}
   transition:transform .45s var(--ease),opacity .45s var(--ease);
 }
 .tile:hover figcaption{transform:translateY(0);opacity:1;}
+.tile figcaption .bed-size{opacity:.78;font-weight:300;letter-spacing:.08em;}
 
 /* ==========================================================================
    amenities

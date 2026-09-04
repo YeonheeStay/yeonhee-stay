@@ -25,7 +25,16 @@
     ['.nav',        '상단 메뉴'],
     ['.sheet',      '모바일 메뉴']
   ];
-  var SINGLE_TEXT = ['.price-num', '.stat dd', '.dock-price strong'];
+  var SINGLE_TEXT = ['.price-num', '.dock-price strong'];
+  var STAT_SELECT_OPTIONS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+  var BED_SIZES = [
+    ['싱글 침대 1개', 'One single bed'],
+    ['싱글 침대 2개', 'Two single beds'],
+    ['더블 침대', 'Double bed'],
+    ['퀸 침대', 'Queen bed'],
+    ['킹 침대', 'King bed'],
+    ['퀸 침대 + 싱글 침대', 'Queen bed + single bed']
+  ];
 
   /* ---------------- 알림 ---------------- */
   var toastTimer;
@@ -116,8 +125,9 @@
     var buckets = {};
     SECTIONS.forEach(function (s) { buckets[s[1]] = []; });
 
-    // 1) 한국어/영어 짝 텍스트
+    // 1) 한국어/영어 짝 텍스트 (침대 사이즈는 4번에서 셀렉트박스로 별도 처리)
     Array.prototype.forEach.call(doc.querySelectorAll('span.ko'), function (ko) {
+      if (ko.closest('.bed-size')) return;
       var en = ko.nextElementSibling;
       if (!en || !en.classList.contains('en')) en = null;
       var sec = sectionOf(ko);
@@ -131,6 +141,38 @@
         var sec = sectionOf(node);
         if (!sec) return;
         buckets[sec[1]].push({ type: 'single', node: node });
+      });
+    });
+
+    // 2b) 소개 섹션의 핵심 정보 값 (기준 인원 · 침실 · 싱글 침대는 셀렉트박스, 층은 텍스트)
+    Array.prototype.forEach.call(doc.querySelectorAll('.stats .stat'), function (statEl, idx) {
+      var dd = statEl.querySelector('dd');
+      if (!dd) return;
+      var sec = sectionOf(dd);
+      if (!sec) return;
+      var dt = statEl.querySelector('dt');
+      var dtKo = dt && dt.querySelector('.ko');
+      var dtEn = dt && dt.querySelector('.en');
+      buckets[sec[1]].push({
+        type: 'stat',
+        node: dd,
+        labelKo: dtKo ? readText(dtKo) : '',
+        labelEn: dtEn ? readText(dtEn) : '',
+        select: idx < 3 // 기준 인원 · 침실 · 싱글 침대(0~2번째) = 숫자 셀렉트, 층(3번째) = 텍스트
+      });
+    });
+
+    // 2c) 방마다 침대 사이즈 (셀렉트박스)
+    Array.prototype.forEach.call(doc.querySelectorAll('.bed-size'), function (wrap) {
+      var sec = sectionOf(wrap);
+      if (!sec) return;
+      var fig = wrap.closest('figcaption');
+      var roomNameEl = fig ? fig.querySelector(':scope > .ko') : null;
+      buckets[sec[1]].push({
+        type: 'bedsize',
+        ko: wrap.querySelector('.ko'),
+        en: wrap.querySelector('.en'),
+        roomLabel: roomNameEl ? readText(roomNameEl) : '방'
       });
     });
 
@@ -247,8 +289,68 @@
     }
 
     if (item.type === 'single') {
-      wrap.appendChild(el('span', 'flabel', shorten(readText(item.node), 52) + ' (공통)'));
+      wrap.appendChild(el('span', 'flabel', shorten(readText(item.node), 52) + ' (한국어·영어 공통 — 하나만 입력하면 양쪽에 표시됩니다)'));
       wrap.appendChild(textControl(item.node));
+      return wrap;
+    }
+
+    if (item.type === 'bedsize') {
+      wrap.appendChild(el('span', 'flabel', (item.roomLabel || '방') + ' · 침대 사이즈'));
+      var bsel = document.createElement('select');
+      var curKo = item.ko ? readText(item.ko).trim() : '';
+      var matched = false;
+      BED_SIZES.forEach(function (opt) {
+        var o = document.createElement('option');
+        o.value = opt[0];
+        o.textContent = opt[0];
+        if (opt[0] === curKo) { o.selected = true; matched = true; }
+        bsel.appendChild(o);
+      });
+      if (!matched && curKo) {
+        var custom = document.createElement('option');
+        custom.value = curKo;
+        custom.textContent = curKo + ' (기존 값)';
+        custom.selected = true;
+        bsel.insertBefore(custom, bsel.firstChild);
+      }
+      bsel.addEventListener('change', function () {
+        var found = null;
+        for (var i = 0; i < BED_SIZES.length; i++) {
+          if (BED_SIZES[i][0] === bsel.value) { found = BED_SIZES[i]; break; }
+        }
+        if (item.ko) writeText(item.ko, bsel.value);
+        if (item.en) writeText(item.en, found ? found[1] : bsel.value);
+        markDirty();
+      });
+      wrap.appendChild(bsel);
+      return wrap;
+    }
+
+    if (item.type === 'stat') {
+      var statLabel = item.labelKo || '';
+      if (item.labelEn) statLabel += (statLabel ? ' · ' : '') + item.labelEn;
+      wrap.appendChild(el('span', 'flabel', (statLabel || '값') + ' (숫자 값 — 한국어·영어 화면에 동일하게 표시됩니다)'));
+
+      if (item.select) {
+        var sel = document.createElement('select');
+        var current = readText(item.node).trim();
+        var opts = STAT_SELECT_OPTIONS.slice();
+        if (current !== '' && opts.indexOf(current) === -1) opts.unshift(current);
+        opts.forEach(function (v) {
+          var o = document.createElement('option');
+          o.value = v;
+          o.textContent = v;
+          if (v === current) o.selected = true;
+          sel.appendChild(o);
+        });
+        sel.addEventListener('change', function () {
+          writeText(item.node, sel.value);
+          markDirty();
+        });
+        wrap.appendChild(sel);
+      } else {
+        wrap.appendChild(textControl(item.node));
+      }
       return wrap;
     }
 
