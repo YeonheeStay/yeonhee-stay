@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>연희 스테이 · 관리자</title>
+<link rel="icon" href="assets/favicon-32.png" sizes="32x32">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Inter:wght@400;500;600&family=Nanum+Myeongjo:wght@700&family=Noto+Sans+KR:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FBF1E8; --cream-2:#F4E6D7; --white:#FFFDFA;
+  --espresso:#241A13; --ink:#3D2A1D; --ink-2:#6E5644; --ink-3:#9C8571;
+  --brass:#B07C4F; --brass-2:#8A5B35;
+  --line:rgba(61,42,29,.16); --line-2:rgba(61,42,29,.08);
+  --ok:#3F7A4E; --warn:#9A5B22; --err:#9C3B27;
+  --display:'Cormorant Garamond','Nanum Myeongjo',serif;
+  --sans:'Inter','Noto Sans KR',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;}
+img{display:block;max-width:100%;}
+button,input,textarea,select{font:inherit;color:inherit;}
+button{cursor:pointer;border:0;background:none;}
+a{color:var(--brass-2);}
+
+/* ---------- top bar ---------- */
+.top{
+  position:sticky;top:0;z-index:30;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:14px 24px;background:rgba(251,241,232,.95);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.top-brand{display:flex;align-items:center;gap:10px;margin-right:auto;}
+.top-brand img{width:30px;height:30px;}
+.top-title{font-family:var(--display);font-weight:600;font-size:1.18rem;line-height:1.1;}
+.top-sub{font-size:.66rem;letter-spacing:.2em;color:var(--ink-3);text-transform:uppercase;}
+.status{display:inline-flex;align-items:center;gap:7px;font-size:.8rem;color:var(--ink-2);}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ink-3);}
+.dot.on{background:var(--ok);}
+.dot.warn{background:var(--warn);}
+.dot.err{background:var(--err);}
+
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:10px 18px;border-radius:999px;background:var(--espresso);color:var(--cream);
+  font-size:.82rem;font-weight:500;transition:opacity .2s,transform .2s;
+}
+.btn:hover{transform:translateY(-1px);}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn--line{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);}
+.btn--line:hover{background:var(--white);}
+.btn--brass{background:var(--brass-2);}
+
+/* ---------- layout ---------- */
+.wrap{display:grid;grid-template-columns:1fr;gap:26px;max-width:1240px;margin:0 auto;padding:26px 24px 90px;}
+@media(min-width:1000px){.wrap{grid-template-columns:236px 1fr;align-items:start;}}
+
+.side{position:sticky;top:88px;display:none;}
+@media(min-width:1000px){.side{display:block;}}
+.side h4{margin:0 0 10px;font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);}
+.side a{
+  display:block;padding:8px 12px;border-radius:8px;font-size:.85rem;color:var(--ink-2);
+  text-decoration:none;transition:background .2s,color .2s;
+}
+.side a:hover{background:var(--white);color:var(--ink);}
+.side .count{float:right;color:var(--ink-3);font-size:.74rem;}
+
+/* ---------- panels ---------- */
+.panel{background:var(--white);border:1px solid var(--line-2);border-radius:14px;padding:22px;margin-bottom:20px;}
+.panel > h2{
+  margin:0 0 4px;font-family:var(--display);font-weight:600;font-size:1.42rem;
+}
+.panel .hint{margin:0 0 18px;font-size:.83rem;color:var(--ink-3);line-height:1.75;}
+.panel--flag{background:linear-gradient(180deg,#FFF8EE,#FFFDFA);border-color:rgba(176,124,79,.35);}
+
+.field{padding:14px 0;border-top:1px solid var(--line-2);}
+.field:first-of-type{border-top:0;}
+.field > label,.flabel{
+  display:block;font-size:.74rem;font-weight:500;letter-spacing:.02em;color:var(--ink-2);margin-bottom:7px;
+}
+.pair{display:grid;grid-template-columns:1fr;gap:10px;}
+@media(min-width:720px){.pair{grid-template-columns:1fr 1fr;}}
+.sub{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.chip{
+  font-size:.6rem;font-weight:600;letter-spacing:.1em;padding:2px 7px;border-radius:4px;
+  background:var(--cream-2);color:var(--brass-2);
+}
+input[type=text],input[type=url],input[type=password],textarea,select{
+  width:100%;padding:10px 13px;border-radius:9px;
+  background:var(--cream);border:1px solid var(--line);
+  transition:border-color .2s,background .2s;
+}
+input:focus,textarea:focus,select:focus{outline:0;border-color:var(--brass);background:var(--white);}
+textarea{resize:vertical;min-height:76px;line-height:1.7;}
+.mono{font-family:var(--mono);font-size:.8rem;}
+
+.photo{display:grid;grid-template-columns:104px 1fr;gap:14px;align-items:start;}
+.photo-thumb{
+  width:104px;height:78px;border-radius:8px;overflow:hidden;
+  background:linear-gradient(148deg,#2E2017,#5B4130 42%,#A57C58);
+  display:flex;align-items:center;justify-content:center;
+}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;}
+.photo-thumb span{font-size:.62rem;color:rgba(251,241,232,.8);text-align:center;padding:4px;}
+
+.note{
+  padding:13px 15px;border-radius:10px;background:var(--cream-2);
+  font-size:.82rem;line-height:1.75;color:var(--ink-2);
+}
+.note strong{color:var(--ink);}
+.note--warn{background:#FBF0E2;box-shadow:inset 0 0 0 1px rgba(154,91,34,.25);}
+
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.grow{flex:1;min-width:180px;}
+
+/* ---------- loader ---------- */
+.loader{max-width:560px;margin:70px auto;text-align:center;padding:0 24px;}
+.loader img{width:74px;margin:0 auto 20px;}
+.loader h1{font-family:var(--display);font-weight:600;font-size:2rem;margin:0 0 10px;}
+.loader p{color:var(--ink-2);margin:0 0 24px;line-height:1.85;}
+.drop{
+  border:1.5px dashed var(--line);border-radius:14px;padding:30px 20px;background:var(--white);
+  transition:border-color .2s,background .2s;
+}
+.drop.over{border-color:var(--brass);background:#FFF8EE;}
+
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(120%);
+  z-index:60;padding:13px 22px;border-radius:999px;
+  background:var(--espresso);color:var(--cream);font-size:.85rem;
+  box-shadow:0 16px 40px -20px rgba(36,26,19,.8);
+  transition:transform .35s cubic-bezier(.22,.61,.36,1);
+  max-width:90vw;text-align:center;
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.err{background:var(--err);}
+[hidden]{display:none !important;}
+</style>
+</head>
+<body>
+
+<!-- ===== 파일을 아직 못 읽은 경우 ===== -->
+<div class="loader" id="loader">
+  <img src="assets/logo-mark-dark.png" alt="">
+  <h1>연희 스테이 관리자</h1>
+  <p id="loaderMsg">홈페이지 파일(index.html)을 읽는 중입니다…</p>
+  <div class="drop" id="drop" hidden>
+    <p style="margin-bottom:18px;">이 폴더의 <strong>index.html</strong> 파일을 선택하거나 여기로 끌어다 놓아주세요.</p>
+    <input type="file" id="filePick" accept=".html,text/html">
+    <p style="margin:18px 0 0;font-size:.8rem;color:var(--ink-3);">
+      웹 주소(http)로 열면 자동으로 불러옵니다. 컴퓨터에서 파일을 직접 열었을 때만 이 단계가 필요해요.
+    </p>
+  </div>
+</div>
+
+<!-- ===== 편집 화면 ===== -->
+<div id="app" hidden>
+  <header class="top">
+    <div class="top-brand">
+      <img src="assets/logo-mark-dark.png" alt="">
+      <div>
+        <div class="top-title">연희 스테이 관리자</div>
+        <div class="top-sub">Site Editor</div>
+      </div>
+    </div>
+    <span class="status"><span class="dot on" id="stateDot"></span><span id="stateText">불러옴</span></span>
+    <button class="btn btn--line" id="previewBtn" type="button">미리보기</button>
+    <button class="btn btn--line" id="downloadBtn" type="button">index.html 내려받기</button>
+    <button class="btn btn--brass" id="ghSaveBtn" type="button" disabled>GitHub에 저장</button>
+  </header>
+
+  <div class="wrap">
+    <aside class="side">
+      <h4>바로가기</h4>
+      <nav id="sideNav"></nav>
+    </aside>
+
+    <main>
+      <!-- 예약 링크 -->
+      <section class="panel panel--flag">
+        <h2>에어비앤비 예약 링크</h2>
+        <p class="hint">여기에 주소를 넣으면 홈페이지의 모든 예약 버튼이 이 링크로 연결됩니다. 비워두면 맨 아래 예약 버튼이 비활성 상태로 표시돼요.</p>
+        <input type="url" id="bookingUrl" class="mono" placeholder="https://www.airbnb.co.kr/rooms/12345678">
+      </section>
+
+      <section class="panel">
+        <h2>사용법</h2>
+        <p class="hint" style="margin:0;">
+          아래에서 값을 고치면 즉시 반영됩니다. <strong>줄바꿈은 Enter</strong>로 입력하면 홈페이지에서도 줄이 나뉘어요.
+          한국어(KO)와 영어(EN)는 각각 따로 저장되니 둘 다 고쳐주세요.
+          수정을 마치면 위쪽의 <strong>미리보기</strong>로 확인한 뒤
+          <strong>index.html 내려받기</strong> 또는 <strong>GitHub에 저장</strong>을 눌러 반영합니다.
+        </p>
+      </section>
+
+      <!-- 자동 생성 영역 -->
+      <div id="sections"></div>
+
+      <!-- GitHub 저장 설정 -->
+      <section class="panel" id="ghPanel">
+        <h2>GitHub에 바로 저장 (선택)</h2>
+        <p class="hint">
+          설정해두면 수정 후 버튼 한 번으로 홈페이지에 반영됩니다. 설정하지 않아도
+          <strong>index.html 내려받기</strong> 후 GitHub에 직접 올리는 방식으로 사용할 수 있어요.
+        </p>
+
+        <div class="note note--warn" style="margin-bottom:16px;">
+          토큰은 이 브라우저에만 저장되며 외부로 전송되지 않습니다(GitHub 외). 공용 컴퓨터에서는 사용하지 마시고,
+          토큰은 <strong>이 저장소 하나에만 권한을 준 Fine-grained token</strong>으로 발급해주세요.
+        </div>
+
+        <div class="field">
+          <label for="ghRepo">저장소 (계정/저장소이름)</label>
+          <input type="text" id="ghRepo" class="mono" placeholder="seangoodguy/yeonhee-stay">
+        </div>
+        <div class="field">
+          <div class="row">
+            <div class="grow">
+              <label for="ghBranch">브랜치</label>
+              <input type="text" id="ghBranch" class="mono" placeholder="main" value="main">
+            </div>
+            <div class="grow">
+              <label for="ghPath">파일 경로</label>
+              <input type="text" id="ghPath" class="mono" placeholder="index.html" value="index.html">
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="ghToken">액세스 토큰</label>
+          <input type="password" id="ghToken" class="mono" placeholder="github_pat_...">
+        </div>
+        <div class="field">
+          <div class="row">
+            <button class="btn btn--line" id="ghSaveCfg" type="button">설정 저장</button>
+            <button class="btn btn--line" id="ghClear" type="button">토큰 지우기</button>
+            <span class="status"><span class="dot" id="ghDot"></span><span id="ghText">미설정</span></span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/admin.js"></script>
+</body>
+</html>
