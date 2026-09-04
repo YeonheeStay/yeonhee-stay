@@ -146,9 +146,25 @@
       <dl class="stats" data-anim>
         <div class="stat"><dt><span class="ko">기준 인원</span><span class="en">Guests</span></dt><dd>2</dd></div>
         <div class="stat"><dt><span class="ko">침실</span><span class="en">Bedrooms</span></dt><dd>2</dd></div>
-        <div class="stat"><dt><span class="ko">싱글 침대</span><span class="en">Single beds</span></dt><dd>3</dd></div>
         <div class="stat"><dt><span class="ko">층</span><span class="en">Floor</span></dt><dd>1F</dd></div>
       </dl>
+
+      <ul class="room-info" data-anim>
+        <li>
+          <span class="ri-name"><span class="ko">침실 1</span><span class="en">Bedroom 1</span></span>
+          <span class="ri-detail">
+            <span class="room-guests" data-room="1"><span class="ko">2인실</span><span class="en">Sleeps 2</span></span>
+            <span class="bed-size" data-room="1">· <span class="ko">싱글 침대</span><span class="en">Single bed</span></span>
+          </span>
+        </li>
+        <li>
+          <span class="ri-name"><span class="ko">침실 2</span><span class="en">Bedroom 2</span></span>
+          <span class="ri-detail">
+            <span class="room-guests" data-room="2"><span class="ko">1인실</span><span class="en">Sleeps 1</span></span>
+            <span class="bed-size" data-room="2">· <span class="ko">싱글 침대</span><span class="en">Single bed</span></span>
+          </span>
+        </li>
+      </ul>
     </div>
   </div>
 </section>
@@ -201,11 +217,11 @@
     </figure>
     <figure class="tile plate">
       <img src="https://images.unsplash.com/photo-1633944095397-878622ebc01c?auto=format&amp;fit=crop&amp;w=900&amp;q=80" alt="침실 1" data-photo loading="lazy">
-      <figcaption><span class="ko">침실 1</span><span class="en">Bedroom 1</span> <span class="bed-size">· <span class="ko">싱글 침대 2개</span><span class="en">Two single beds</span></span></figcaption>
+      <figcaption><span class="ko">침실 1</span><span class="en">Bedroom 1</span> <span class="bed-size" data-room="1">· <span class="ko">싱글 침대</span><span class="en">Single bed</span></span></figcaption>
     </figure>
     <figure class="tile plate">
       <img src="https://images.unsplash.com/photo-1657524497244-a58edfcec6eb?auto=format&amp;fit=crop&amp;w=900&amp;q=80" alt="침실 2" data-photo loading="lazy">
-      <figcaption><span class="ko">침실 2</span><span class="en">Bedroom 2</span> <span class="bed-size">· <span class="ko">싱글 침대 1개</span><span class="en">One single bed</span></span></figcaption>
+      <figcaption><span class="ko">침실 2</span><span class="en">Bedroom 2</span> <span class="bed-size" data-room="2">· <span class="ko">싱글 침대</span><span class="en">Single bed</span></span></figcaption>
     </figure>
     <figure class="tile plate">
       <img src="https://images.unsplash.com/photo-1729837149090-764b4272c2d7?auto=format&amp;fit=crop&amp;w=900&amp;q=80" alt="주방" data-photo loading="lazy">
@@ -398,7 +414,8 @@
 
     <div class="book-facts" data-anim>
       <span><svg class="ic"><use href="#i-users"/></svg><span class="ko">기준 인원 2명</span><span class="en">Up to 2 guests</span></span>
-      <span><svg class="ic"><use href="#i-bed"/></svg><span class="ko">침실 2 · 싱글 침대 3</span><span class="en">2 bedrooms · 3 single beds</span></span>
+      <span><svg class="ic"><use href="#i-bed"/></svg><span class="ko">침실 1</span><span class="en">Bedroom 1</span> <span class="bed-size" data-room="1">· <span class="ko">싱글 침대</span><span class="en">Single bed</span></span></span>
+      <span><svg class="ic"><use href="#i-bed"/></svg><span class="ko">침실 2</span><span class="en">Bedroom 2</span> <span class="bed-size" data-room="2">· <span class="ko">싱글 침대</span><span class="en">Single bed</span></span></span>
       <span><svg class="ic"><use href="#i-door"/></svg><span class="ko">1층 독립 출입</span><span class="en">Private ground floor</span></span>
     </div>
 

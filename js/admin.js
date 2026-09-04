@@ -28,13 +28,15 @@
   var SINGLE_TEXT = ['.price-num', '.dock-price strong'];
   var STAT_SELECT_OPTIONS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
   var BED_SIZES = [
-    ['싱글 침대 1개', 'One single bed'],
-    ['싱글 침대 2개', 'Two single beds'],
-    ['더블 침대', 'Double bed'],
-    ['퀸 침대', 'Queen bed'],
-    ['킹 침대', 'King bed'],
-    ['퀸 침대 + 싱글 침대', 'Queen bed + single bed']
+    { key: '싱글', ko: '싱글 침대', en: 'Single bed' },
+    { key: '슈퍼싱글', ko: '슈퍼싱글 침대', en: 'Super single bed' },
+    { key: '더블', ko: '더블 침대', en: 'Double bed' },
+    { key: '퀸', ko: '퀸 침대', en: 'Queen bed' },
+    { key: '킹', ko: '킹 침대', en: 'King bed' }
   ];
+  var ROOM_GUESTS = [1, 2, 3, 4].map(function (n) {
+    return { key: String(n), ko: n + '인실', en: 'Sleeps ' + n };
+  });
 
   /* ---------------- 알림 ---------------- */
   var toastTimer;
@@ -121,6 +123,31 @@
     return n;
   }
 
+  // 같은 data-room 값을 가진 요소들(같은 방을 가리키는 여러 곳의 표시)을 하나로 묶는다.
+  // 예: 침실 1의 침대 종류가 갤러리 캡션·소개 섹션·예약 섹션 세 군데에 나타나도
+  //     이 함수로 묶으면 관리자 화면에서는 셀렉트박스 하나로 세 곳이 동시에 바뀐다.
+  function groupByRoom(selector) {
+    var rooms = {};
+    var order = [];
+    Array.prototype.forEach.call(doc.querySelectorAll(selector), function (wrap) {
+      var sec = sectionOf(wrap);
+      if (!sec) return;
+      var room = wrap.getAttribute('data-room') || ('_' + order.length);
+      if (!rooms[room]) {
+        var container = wrap.closest('figcaption') || wrap.closest('li') || wrap.parentElement;
+        var roomNameEl = container ? container.querySelector('.ko') : null;
+        rooms[room] = {
+          spans: [],
+          roomLabel: roomNameEl ? readText(roomNameEl) : '방',
+          sectionLabel: sec[1]
+        };
+        order.push(room);
+      }
+      rooms[room].spans.push({ ko: wrap.querySelector('.ko'), en: wrap.querySelector('.en') });
+    });
+    return order.map(function (room) { return rooms[room]; });
+  }
+
   function buildForm() {
     var buckets = {};
     SECTIONS.forEach(function (s) { buckets[s[1]] = []; });
@@ -162,17 +189,22 @@
       });
     });
 
-    // 2c) 방마다 침대 사이즈 (셀렉트박스)
-    Array.prototype.forEach.call(doc.querySelectorAll('.bed-size'), function (wrap) {
-      var sec = sectionOf(wrap);
-      if (!sec) return;
-      var fig = wrap.closest('figcaption');
-      var roomNameEl = fig ? fig.querySelector(':scope > .ko') : null;
-      buckets[sec[1]].push({
+    // 2c) 방마다 침대 종류 · 인원 (셀렉트박스) — 같은 data-room 값을 가진 요소는 하나로 묶어서
+    //     한 번에 반영 (소개 섹션 · 갤러리 캡션 · 예약 섹션 요약이 동시에 바뀝니다)
+    groupByRoom('.bed-size').forEach(function (g) {
+      buckets[g.sectionLabel].push({
         type: 'bedsize',
-        ko: wrap.querySelector('.ko'),
-        en: wrap.querySelector('.en'),
-        roomLabel: roomNameEl ? readText(roomNameEl) : '방'
+        spans: g.spans,
+        roomLabel: g.roomLabel,
+        node: g.spans[0].ko || g.spans[0].en
+      });
+    });
+    groupByRoom('.room-guests').forEach(function (g) {
+      buckets[g.sectionLabel].push({
+        type: 'roomguests',
+        spans: g.spans,
+        roomLabel: g.roomLabel,
+        node: g.spans[0].ko || g.spans[0].en
       });
     });
 
@@ -294,35 +326,41 @@
       return wrap;
     }
 
-    if (item.type === 'bedsize') {
-      wrap.appendChild(el('span', 'flabel', (item.roomLabel || '방') + ' · 침대 사이즈'));
-      var bsel = document.createElement('select');
-      var curKo = item.ko ? readText(item.ko).trim() : '';
-      var matched = false;
-      BED_SIZES.forEach(function (opt) {
+    if (item.type === 'bedsize' || item.type === 'roomguests') {
+      var isGuests = item.type === 'roomguests';
+      var options = isGuests ? ROOM_GUESTS : BED_SIZES;
+      var suffix = isGuests ? '인원 (소개·예약 섹션에 동시 반영)' : '침대 종류 (소개·갤러리·예약 섹션에 동시 반영)';
+      wrap.appendChild(el('span', 'flabel', (item.roomLabel || '방') + ' · ' + suffix));
+
+      var rsel = document.createElement('select');
+      var firstKo = item.spans[0] && item.spans[0].ko ? readText(item.spans[0].ko).trim() : '';
+      var matchedOpt = null;
+      options.forEach(function (opt) {
         var o = document.createElement('option');
-        o.value = opt[0];
-        o.textContent = opt[0];
-        if (opt[0] === curKo) { o.selected = true; matched = true; }
-        bsel.appendChild(o);
+        o.value = opt.key;
+        o.textContent = isGuests ? opt.ko : opt.key;
+        if (opt.ko === firstKo) { o.selected = true; matchedOpt = opt; }
+        rsel.appendChild(o);
       });
-      if (!matched && curKo) {
+      if (!matchedOpt && firstKo) {
         var custom = document.createElement('option');
-        custom.value = curKo;
-        custom.textContent = curKo + ' (기존 값)';
+        custom.value = firstKo;
+        custom.textContent = firstKo + ' (기존 값)';
         custom.selected = true;
-        bsel.insertBefore(custom, bsel.firstChild);
+        rsel.insertBefore(custom, rsel.firstChild);
       }
-      bsel.addEventListener('change', function () {
+      rsel.addEventListener('change', function () {
         var found = null;
-        for (var i = 0; i < BED_SIZES.length; i++) {
-          if (BED_SIZES[i][0] === bsel.value) { found = BED_SIZES[i]; break; }
+        for (var i = 0; i < options.length; i++) {
+          if (options[i].key === rsel.value) { found = options[i]; break; }
         }
-        if (item.ko) writeText(item.ko, bsel.value);
-        if (item.en) writeText(item.en, found ? found[1] : bsel.value);
+        item.spans.forEach(function (s) {
+          if (s.ko) writeText(s.ko, found ? found.ko : rsel.value);
+          if (s.en) writeText(s.en, found ? found.en : rsel.value);
+        });
         markDirty();
       });
-      wrap.appendChild(bsel);
+      wrap.appendChild(rsel);
       return wrap;
     }
 
