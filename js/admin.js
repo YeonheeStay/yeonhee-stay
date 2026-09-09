@@ -155,6 +155,7 @@
     // 1) 한국어/영어 짝 텍스트 (침대 사이즈는 4번에서 셀렉트박스로 별도 처리)
     Array.prototype.forEach.call(doc.querySelectorAll('span.ko'), function (ko) {
       if (ko.closest('.bed-size')) return;
+      if (ko.closest('[data-field]')) return; // 주소 등 여러 곳에 동시 반영되는 필드는 전용 패널에서 처리
       var en = ko.nextElementSibling;
       if (!en || !en.classList.contains('en')) en = null;
       var sec = sectionOf(ko);
@@ -219,7 +220,10 @@
     Array.prototype.forEach.call(doc.querySelectorAll('a.link-arrow[href]'), function (a) {
       var sec = sectionOf(a);
       if (!sec) return;
-      buckets[sec[1]].push({ type: 'href', node: a, label: '지도 링크 주소' });
+      var label = a.hasAttribute('data-address-map')
+        ? '지도 링크 주소 (위의 "숙소 주소"를 바꾸면 자동으로 갱신됩니다 — 필요하면 직접 수정도 가능)'
+        : '지도 링크 주소';
+      buckets[sec[1]].push({ type: 'href', node: a, label: label });
     });
 
     // 예약 링크
@@ -229,6 +233,37 @@
       doc.body.setAttribute('data-booking-url', urlInput.value.trim());
       markDirty();
     });
+
+    // 숙소 주소 — 위치 · 푸터 · 모바일 메뉴 세 곳에 동시 반영하고, 지도 링크도 함께 갱신한다.
+    var addrNodes = Array.prototype.slice.call(doc.querySelectorAll('[data-field="address"]'));
+    var addrKoInput = $('addrKo');
+    var addrEnInput = $('addrEn');
+    if (addrNodes.length) {
+      var firstKo = addrNodes[0].querySelector('.ko');
+      var firstEn = addrNodes[0].querySelector('.en');
+      addrKoInput.value = firstKo ? readText(firstKo) : '';
+      addrEnInput.value = firstEn ? readText(firstEn) : '';
+
+      var syncAddress = function () {
+        addrNodes.forEach(function (n) {
+          var ko = n.querySelector('.ko');
+          var en = n.querySelector('.en');
+          if (ko) writeText(ko, addrKoInput.value);
+          if (en) writeText(en, addrEnInput.value);
+        });
+        var mapLink = doc.querySelector('[data-address-map]');
+        var trimmedKo = addrKoInput.value.trim();
+        if (mapLink && trimmedKo) {
+          var newHref = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(trimmedKo);
+          mapLink.setAttribute('href', newHref);
+          var mapHrefInput = $('mapHrefInput'); // 아래 "지도 링크 주소" 입력칸도 화면에서 바로 같이 갱신
+          if (mapHrefInput) mapHrefInput.value = newHref;
+        }
+        markDirty();
+      };
+      addrKoInput.addEventListener('input', syncAddress);
+      addrEnInput.addEventListener('input', syncAddress);
+    }
 
     var host = $('sections');
     var nav = $('sideNav');
@@ -396,6 +431,7 @@
       wrap.appendChild(el('span', 'flabel', item.label));
       var hi = el('input');
       hi.type = 'url'; hi.className = 'mono'; hi.value = item.node.getAttribute('href') || '';
+      if (item.node.hasAttribute('data-address-map')) hi.id = 'mapHrefInput'; // 주소 변경 시 자동 갱신 대상
       hi.addEventListener('input', function () { item.node.setAttribute('href', hi.value.trim()); markDirty(); });
       wrap.appendChild(hi);
       return wrap;
