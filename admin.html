@@ -221,6 +221,27 @@ textarea{resize:vertical;min-height:76px;line-height:1.7;}
         <input type="url" id="bookingUrl" class="mono" placeholder="https://www.airbnb.co.kr/rooms/12345678">
       </section>
 
+      <!-- 숙소 주소 -->
+      <section class="panel panel--flag">
+        <h2>숙소 주소</h2>
+        <p class="hint">
+          이 주소는 <strong>위치·푸터·모바일 메뉴</strong> 세 군데에 한 번에 반영됩니다 (예전엔 각각 따로 고쳐야 해서 한 곳만 바꾸면 다른 곳은 옛날 주소가 남아있었어요).
+          아래 "지도에서 보기" 링크도 KO 주소를 기준으로 자동으로 함께 갱신됩니다.
+        </p>
+        <div class="field">
+          <div class="pair">
+            <div>
+              <div class="sub"><span class="chip">KO</span></div>
+              <input type="text" id="addrKo" class="mono">
+            </div>
+            <div>
+              <div class="sub"><span class="chip">EN</span></div>
+              <input type="text" id="addrEn" class="mono">
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="panel guide" id="guidePanel">
         <h2>📖 이용 안내서</h2>
         <p class="guide-intro">
