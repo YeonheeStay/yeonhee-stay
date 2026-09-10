@@ -53,6 +53,8 @@ a{color:var(--brass-2);}
 .btn--line{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);}
 .btn--line:hover{background:var(--white);}
 .btn--brass{background:var(--brass-2);}
+.btn--brass.need-setup{opacity:.6;}
+.btn--brass.need-setup:hover{opacity:.8;}
 
 /* ---------- layout ---------- */
 .wrap{display:grid;grid-template-columns:1fr;gap:26px;max-width:1240px;margin:0 auto;padding:26px 24px 90px;}
@@ -75,6 +77,12 @@ a{color:var(--brass-2);}
 }
 .panel .hint{margin:0 0 18px;font-size:.83rem;color:var(--ink-3);line-height:1.75;}
 .panel--flag{background:linear-gradient(180deg,#FFF8EE,#FFFDFA);border-color:rgba(176,124,79,.35);}
+.panel--pulse{animation:ghPulse 1.5s ease;}
+@keyframes ghPulse{
+  0%{box-shadow:0 0 0 0 rgba(176,124,79,.55);border-color:var(--brass-2);}
+  70%{box-shadow:0 0 0 16px rgba(176,124,79,0);}
+  100%{box-shadow:0 0 0 0 rgba(176,124,79,0);border-color:var(--line-2);}
+}
 
 .field{padding:14px 0;border-top:1px solid var(--line-2);}
 .field:first-of-type{border-top:0;}
@@ -204,7 +212,7 @@ textarea{resize:vertical;min-height:76px;line-height:1.7;}
     <span class="status"><span class="dot on" id="stateDot"></span><span id="stateText">불러옴</span></span>
     <button class="btn btn--line" id="previewBtn" type="button">미리보기</button>
     <button class="btn btn--line" id="downloadBtn" type="button">index.html 내려받기</button>
-    <button class="btn btn--brass" id="ghSaveBtn" type="button" disabled>GitHub에 저장</button>
+    <button class="btn btn--brass" id="ghSaveBtn" type="button" title="처음 한 번은 저장소 설정이 필요합니다 (아래 'GitHub에 바로 저장' 항목)">GitHub에 저장</button>
   </header>
 
   <div class="wrap">
@@ -420,8 +428,11 @@ textarea{resize:vertical;min-height:76px;line-height:1.7;}
       <section class="panel" id="ghPanel">
         <h2>GitHub에 바로 저장 (선택)</h2>
         <p class="hint">
-          설정해두면 수정 후 버튼 한 번으로 홈페이지에 반영됩니다. 설정하지 않아도
-          <strong>index.html 내려받기</strong> 후 GitHub에 직접 올리는 방식으로 사용할 수 있어요.
+          <strong>처음 한 번만</strong> 액세스 토큰을 발급받아 아래에 입력하면, 그다음부터는 상단의
+          <strong>GitHub에 저장</strong> 버튼 한 번으로 홈페이지에 바로 반영됩니다. 저장소 이름은 이미 채워져
+          있으니 <strong>액세스 토큰만</strong> 발급받아 입력하면 됩니다 (방법은 바로 아래 참고).
+          설정 전에 상단 버튼을 누르면 자동으로 이 화면으로 안내해드려요. 설정하지 않아도
+          <strong>index.html 내려받기</strong> 후 GitHub에 직접 올리는 방식으로 사용할 수 있습니다.
         </p>
 
         <div class="note note--warn" style="margin-bottom:16px;">
@@ -431,7 +442,7 @@ textarea{resize:vertical;min-height:76px;line-height:1.7;}
 
         <div class="field">
           <label for="ghRepo">저장소 (계정/저장소이름)</label>
-          <input type="text" id="ghRepo" class="mono" placeholder="YeonheeStay/yeonhee-stay">
+          <input type="text" id="ghRepo" class="mono" placeholder="YeonheeStay/yeonhee-stay" value="yeonheestay/yeonhee-stay">
         </div>
         <div class="field">
           <div class="row">

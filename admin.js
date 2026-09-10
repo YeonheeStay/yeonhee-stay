@@ -522,12 +522,38 @@
       token: $('ghToken').value.trim()
     };
   }
+  var ghReady = false;
+
   function refreshGh() {
     var c = ghCfg();
-    var ready = !!(c.repo && c.token && /^[^/]+\/[^/]+$/.test(c.repo));
-    $('ghSaveBtn').disabled = !ready;
-    $('ghDot').className = 'dot ' + (ready ? 'on' : '');
-    $('ghText').textContent = ready ? c.repo + ' · ' + c.branch : '미설정';
+    ghReady = !!(c.repo && c.token && /^[^/]+\/[^/]+$/.test(c.repo));
+    $('ghSaveBtn').disabled = false; // 저장 중(disabled=true)이었다면 여기서 다시 눌러진다
+    $('ghSaveBtn').classList.toggle('need-setup', !ghReady);
+    $('ghDot').className = 'dot ' + (ghReady ? 'on' : '');
+    $('ghText').textContent = ghReady ? c.repo + ' · ' + c.branch : '미설정';
+  }
+
+  // 설정이 안 됐을 때 상단 버튼을 누르면, 무엇이 빠졌는지 알려주고
+  // 설정 화면으로 스크롤 + 강조 + 해당 입력칸에 포커스를 준다.
+  function guideToGhSetup() {
+    var c = ghCfg();
+    var missingRepo = !c.repo || !/^[^/]+\/[^/]+$/.test(c.repo);
+    var focusId = missingRepo ? 'ghRepo' : 'ghToken';
+    toast(missingRepo
+      ? '먼저 아래에서 GitHub 저장소를 확인해주세요.'
+      : '처음 한 번은 GitHub 액세스 토큰을 입력해야 합니다. 아래 안내를 따라주세요.', true);
+
+    var panel = $('ghPanel');
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    panel.classList.remove('panel--pulse');
+    // 리플로우를 강제해 같은 애니메이션을 다시 재생할 수 있게 한다.
+    void panel.offsetWidth;
+    panel.classList.add('panel--pulse');
+    setTimeout(function () { panel.classList.remove('panel--pulse'); }, 1600);
+    setTimeout(function () {
+      var f = $(focusId);
+      if (f) f.focus({ preventScroll: true });
+    }, 450);
   }
   ['ghRepo', 'ghBranch', 'ghPath', 'ghToken'].forEach(function (id) {
     $(id).addEventListener('input', refreshGh);
@@ -574,6 +600,8 @@
   }
 
   $('ghSaveBtn').addEventListener('click', function () {
+    if (!ghReady) { guideToGhSetup(); return; }
+
     var c = ghCfg();
     var btn = $('ghSaveBtn');
     var api = 'https://api.github.com/repos/' + c.repo + '/contents/' + c.path.replace(/^\/+/, '');
